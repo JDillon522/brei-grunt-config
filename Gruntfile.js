@@ -1,18 +1,15 @@
-// Generated on 2015-03-25 using generator-brei-app 1.2.4
-'use strict';
-
 var options = {
-    config : {
-        src: 'grunt-config/*.js'
-    },
-    yeoman: {
-      app: 'app',
-      dist: 'dist',
-      deploy: '../../web'
-    },
-    connect: {
-        port: 9000
-    }
+	config : {
+		src: 'grunt-config/*.js'
+	},
+	yeoman: {
+		app: 'app',
+		dist: 'dist',
+		deploy: '<%= deployDirectory %>'
+	},
+	connect: {
+		port: 9000
+	}
 };
 
 // # Globbing
@@ -22,69 +19,82 @@ var options = {
 // 'test/spec/**/*.js'
 
 module.exports = function (grunt) {
-    var configs = require('load-grunt-configs')(grunt, options);
+	'use strict';
 
-    // build a custom version of modernizr
-    grunt.loadNpmTasks('grunt-modernizr');
+	var configs = require('load-grunt-configs')(grunt, options);
 
-    // load all grunt tasks
-    require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
+	// build a custom version of modernizr
+	grunt.loadNpmTasks('grunt-modernizr');
 
-    // Show elapsed time after tasks run
-    require('time-grunt')(grunt);
+	// load all grunt tasks
+	require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
 
-    // Assemble!
-    grunt.loadNpmTasks('assemble');
+	// Show elapsed time after tasks run
+	require('time-grunt')(grunt);
 
-    // For executing the updateScss.js script in app/assemble/helpers
-    grunt.loadNpmTasks('grunt-execute');
+	// Assemble!
+	grunt.loadNpmTasks('assemble');
 
-    grunt.initConfig(configs);
+	// SCSS Lint
+	grunt.loadNpmTasks('grunt-scss-lint');
 
-    grunt.registerTask('server', function (target) {
-        if (target === 'dist') {
-            return grunt.task.run(['build', 'open', 'connect:dist:keepalive']);
-        }
-        grunt.task.run([
-            'clean:assemble',
-            'assemble',
-            'clean:server',
-            'concurrent:server',
-            'autoprefixer',
-            'connect:livereload',
-            'open',
-            'watch'
-        ]);
-    });
+	// For executing the updateScss.js script in app/assemble/helpers
+	grunt.loadNpmTasks('grunt-execute');
 
-    grunt.registerTask('check', [
-        'jshint'
-    ]);
+	grunt.initConfig(configs);
 
-    grunt.registerTask('build', [
-        'clean:assemble',
-        'assemble',
-        'clean:dist',
-        'useminPrepare',
-        'compass:dist',
-        'concurrent:dist',
-        'autoprefixer',
-        'concat',
-        'cssmin',
-        'uglify',
-        'copy:dist',
-        'usemin',
-        'modernizr:dist'
-    ]);
+	grunt.registerTask('server', function (target) {
+		if (target === 'dist') {
+			return grunt.task.run(['build', 'open', 'connect:dist:keepalive']);
+		}
+		grunt.task.run([
+			'clean:assemble',
+			'assemble',
+			'clean:server',
+			'concurrent:server',
+			'connect:livereload',
+			'open',
+			'watch'
+		]);
+	});
 
-    grunt.registerTask('deploy', [
-        'clean:deploy',
-        'copy:deploy'
-    ]);
+	grunt.registerTask('check', [
+		'jshint',
+		'scsslint'
+	]);
 
-    grunt.registerTask('default', [
-        'jshint',
-        'build'
-    ]);
+	grunt.registerTask('build', [
+		'clean:assemble',
+		'assemble',
+		'clean:dist',
+		'useminPrepare',
+		'compass:dist',
+		'autoprefixer',
+		'concat',
+		'cssmin',
+		'uglify',
+		'concurrent:dist',
+		'copy:dist',
+		'usemin',
+		'modernizr:dist'
+	]);
+
+	grunt.registerTask('deploy', [
+		'clean:deploy',
+		'copy:deploy'
+	]);
+
+	grunt.registerTask('default', [
+		'check',
+		'build'
+	]);
+	
+	grunt.registerTask('execute-sync', function (s) {
+		var done = this.async();
+
+		grunt.task.run('execute:target');
+
+		done();
+	});
 
 };
